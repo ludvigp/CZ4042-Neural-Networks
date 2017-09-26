@@ -3,6 +3,7 @@ import theano
 import theano.tensor as T
 import matplotlib.pyplot as plt
 import time
+import math
 
 def init_bias(n = 1):
     return(theano.shared(np.zeros(n), theano.config.floatX))
@@ -38,20 +39,21 @@ def shuffle_data (samples, labels):
     samples, labels = samples[idx], labels[idx]
     return samples, labels
 
-colors = {4:"blue", 8:"purple", 16:"green", 32:"black", 64:"orange"}
-decay = 1e-6
+
+#decay = 1e-6
 learning_rate = 0.01
 epochs = 1000
 
+colors = {0:"blue", 1e-3:"purple", 1e-6:"green", 1e-9:"black", 1e-12:"orange"}
 #Was 32
 #batch_size = 32
 
 batch_size = 16
+neurons = 5
 
-hidden_layer_options = [5, 10, 15, 20, 25]
+possible_decay_parameters = [0, math.pow(10, -3), math.pow(10, -6), math.pow(10, -9), math.pow(10, -12)]
 
-
-for neurons in hidden_layer_options:
+for decay in possible_decay_parameters:
 
 
     # theano expressions
@@ -147,11 +149,11 @@ for neurons in hidden_layer_options:
         test_accuracy = np.append(test_accuracy, np.mean(np.argmax(testY, axis=1) == predict(testX)))
 
     plt.figure("cost")
-    plt.plot(range(epochs), train_cost, color=colors[batch_size], label="test")
+    plt.plot(range(epochs), train_cost, color=colors[decay], label="test")
     plt.figure("accuracy")
-    plt.plot(range(epochs), test_accuracy, color=colors[batch_size])
+    plt.plot(range(epochs), test_accuracy, color=colors[decay])
     plt.figure("time")
-    plt.plot(range(epochs), time_list, color=colors[batch_size])
+    plt.plot(range(epochs), time_list, color=colors[decay])
 
 
 
