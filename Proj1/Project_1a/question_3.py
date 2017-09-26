@@ -41,24 +41,25 @@ def shuffle_data (samples, labels):
 
 decay = 1e-6
 learning_rate = 0.01
-epochs = 200
+epochs = 1000
 
 #Was 32
 #batch_size = 32
 
-batch_sizes = [4, 8, 16, 32, 64]
+batch_size = 16
 
-#To make distinction between graphs
-colors = {4:"blue", 8:"purple", 16:"green", 32:"black", 64:"orange"}
+hidden_layer_options = [5, 10, 15, 20, 25]
 
 
-for batch_size in batch_sizes:
-# theano expressions
+for neurons in hidden_layer_options:
+
+
+    # theano expressions
     X = T.matrix() #features
     Y = T.matrix() #output
 
-    w1, b1 = init_weights(36, 10), init_bias(10) #weights and biases from input to hidden layer
-    w2, b2 = init_weights(10, 6, logistic=False), init_bias(6) #weights and biases from hidden to output layer
+    w1, b1 = init_weights(36, neurons), init_bias(neurons) #weights and biases from input to hidden layer
+    w2, b2 = init_weights(neurons, 6, logistic=False), init_bias(6) #weights and biases from hidden to output layer
 
     h1 = T.nnet.sigmoid(T.dot(X, w1) + b1)
     py = T.nnet.softmax(T.dot(h1, w2) + b2)
@@ -146,17 +147,18 @@ for batch_size in batch_sizes:
         test_accuracy = np.append(test_accuracy, np.mean(np.argmax(testY, axis=1) == predict(testX)))
 
     plt.figure("cost")
-    plt.plot(range(epochs), train_cost, color = colors[batch_size], label = "test")
+    plt.plot(range(epochs), train_cost)
     plt.figure("accuracy")
-    plt.plot(range(epochs), test_accuracy, color = colors[batch_size])
+    plt.plot(range(epochs), test_accuracy)
     plt.figure("time")
-    plt.plot(range(epochs), time_list, color = colors[batch_size])
+    plt.plot(range(epochs), time_list)
 
 
 
     print('%.1f accuracy at iteration %d'%(np.max(test_accuracy)*100, np.argmax(test_accuracy)+1))
 
 #Plots
+
 plt.figure("cost")
 #plt.plot(range(epochs), train_cost)
 plt.xlabel('iterations')
