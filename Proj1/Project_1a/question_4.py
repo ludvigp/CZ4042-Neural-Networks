@@ -51,7 +51,7 @@ colors = {0:"blue", 1e-3:"purple", 1e-6:"green", 1e-9:"black", 1e-12:"orange"}
 batch_size = 16
 neurons = 5
 
-possible_decay_parameters = [0, math.pow(10, -3), math.pow(10, -6), math.pow(10, -9), math.pow(10, -12)]
+possible_decay_parameters = [0, 1e-3, 1e-6, 1e-9, 1e-12]
 
 for decay in possible_decay_parameters:
 
@@ -64,7 +64,7 @@ for decay in possible_decay_parameters:
     w2, b2 = init_weights(neurons, 6, logistic=False), init_bias(6) #weights and biases from hidden to output layer
 
     h1 = T.nnet.sigmoid(T.dot(X, w1) + b1)
-    py = T.nnet.softmax(T.dot(h1, w2) + b2)
+    py = T.nnet.softmax(T.doxt(h1, w2) + b2)
 
     y_x = T.argmax(py, axis=1)
 

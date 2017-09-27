@@ -38,10 +38,10 @@ def shuffle_data (samples, labels):
     samples, labels = samples[idx], labels[idx]
     return samples, labels
 
-colors = {4:"blue", 8:"purple", 16:"green", 32:"black", 64:"orange"}
+colors = {5:"blue", 10:"purple", 15:"green", 20:"black", 25:"orange"}
 decay = 1e-6
 learning_rate = 0.01
-epochs = 1000
+epochs = 100
 
 #Was 32
 #batch_size = 32
@@ -147,11 +147,13 @@ for neurons in hidden_layer_options:
         test_accuracy = np.append(test_accuracy, np.mean(np.argmax(testY, axis=1) == predict(testX)))
 
     plt.figure("cost")
-    plt.plot(range(epochs), train_cost, color=colors[batch_size], label="test")
+    plt.plot(range(epochs), train_cost, color=colors[neurons], label="Neurons: " + str(neurons))
     plt.figure("accuracy")
-    plt.plot(range(epochs), test_accuracy, color=colors[batch_size])
+    plt.plot(range(epochs), test_accuracy, color=colors[neurons], label="Neurons: " + str(neurons))
     plt.figure("time")
-    plt.plot(range(epochs), time_list, color=colors[batch_size])
+    plt.plot(range(epochs), time_list, color=colors[neurons], label="Neurons: " + str(neurons))
+    plt.annotate("%0.1f" % max(time_list), xy = (1, max(time_list)), xytext = (8,0),
+                 textcoords = "offset points", ha = "right", va = "center")
 
 
 
@@ -165,6 +167,7 @@ plt.xlabel('iterations')
 plt.ylabel('cross-entropy')
 plt.title('training cost')
 plt.savefig('p1a_sample_cost.png')
+plt.legend(loc = "best")
 
 plt.figure("accuracy")
 #plt.plot(range(epochs), test_accuracy)
@@ -172,7 +175,10 @@ plt.xlabel('iterations')
 plt.ylabel('accuracy')
 plt.title('test accuracy')
 plt.savefig('p1a_sample_accuracy.png')
+plt.legend(loc = "best")
 
+plt.figure("time")
+plt.legend(loc = "best")
 plt.show()
 
 
