@@ -124,7 +124,7 @@ for neurons in hidden_layer_options:
     start_time = time.time()
 
     for i in range(epochs):
-        if i % 200 == 0:
+        if i+1 % 200 == 0:
             print("Batch size: " + str(batch_size) + ", iteration: " + str(i) +" of " + str(epochs))
         trainX, trainY = shuffle_data(trainX, trainY)
         cost = 0.0
