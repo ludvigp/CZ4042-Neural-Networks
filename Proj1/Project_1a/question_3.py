@@ -43,7 +43,7 @@ decay = 1e-6
 learning_rate = 0.01
 epochs = 1000
 
-batch_size = 32
+batch_size = 16
 
 hidden_layer_options = [5, 10, 15, 20, 25]
 
@@ -159,7 +159,7 @@ plt.figure("cost")
 plt.xlabel('iterations')
 plt.ylabel('cross-entropy')
 plt.title('training cost')
-plt.savefig('p1a_sample_cost.png')
+plt.savefig('p1a_sample_cost_neurons.png')
 plt.legend(loc = "best")
 
 plt.figure("accuracy")
@@ -167,7 +167,7 @@ plt.figure("accuracy")
 plt.xlabel('iterations')
 plt.ylabel('accuracy')
 plt.title('test accuracy')
-plt.savefig('p1a_sample_accuracy.png')
+plt.savefig('p1a_sample_accuracy_neurons.png')
 plt.legend(loc = "best")
 
 plt.figure("time")
@@ -175,6 +175,7 @@ plt.legend(loc = "best")
 plt.xlabel('iterations')
 plt.ylabel('time in seconds')
 plt.title('time')
+plt.savefig('p1a_sample_time_neurons.png')
 plt.show()
 
 
