@@ -3,7 +3,7 @@ import theano
 import theano.tensor as T
 import matplotlib.pyplot as plt
 import time
-import math
+
 
 def init_bias(n = 1):
     return(theano.shared(np.zeros(n), theano.config.floatX))
@@ -64,7 +64,7 @@ for decay in possible_decay_parameters:
     w2, b2 = init_weights(neurons, 6, logistic=False), init_bias(6) #weights and biases from hidden to output layer
 
     h1 = T.nnet.sigmoid(T.dot(X, w1) + b1)
-    py = T.nnet.softmax(T.doxt(h1, w2) + b2)
+    py = T.nnet.softmax(T.dot(h1, w2) + b2)
 
     y_x = T.argmax(py, axis=1)
 
@@ -136,7 +136,7 @@ for decay in possible_decay_parameters:
 
     for i in range(epochs):
         if i % 200 == 0:
-            print("Batch size: " + str(batch_size) + ", iteration: " + str(i) +" of " + str(epochs))
+            print("Decay parameter: " + str(decay) + ", iteration: " + str(i) +" of " + str(epochs))
 
         trainX, trainY = shuffle_data(trainX, trainY)
         cost = 0.0
@@ -149,11 +149,11 @@ for decay in possible_decay_parameters:
         test_accuracy = np.append(test_accuracy, np.mean(np.argmax(testY, axis=1) == predict(testX)))
 
     plt.figure("cost")
-    plt.plot(range(epochs), train_cost, color=colors[decay], label="test")
+    plt.plot(range(epochs), train_cost, color=colors[decay], label = "Decay: " + str(decay))
     plt.figure("accuracy")
-    plt.plot(range(epochs), test_accuracy, color=colors[decay])
-    plt.figure("time")
-    plt.plot(range(epochs), time_list, color=colors[decay])
+    plt.plot(range(epochs), test_accuracy, color=colors[decay], label = "Decay: " + str(decay))
+    #plt.figure("time")
+    #plt.plot(range(epochs), time_list, color=colors[decay])
 
 
 
@@ -166,14 +166,16 @@ plt.figure("cost")
 plt.xlabel('iterations')
 plt.ylabel('cross-entropy')
 plt.title('training cost')
-plt.savefig('p1a_sample_cost.png')
+plt.savefig('p1a_sample_cost_decay.png')
+plt.legend(loc = "best")
 
 plt.figure("accuracy")
 #plt.plot(range(epochs), test_accuracy)
 plt.xlabel('iterations')
 plt.ylabel('accuracy')
 plt.title('test accuracy')
-plt.savefig('p1a_sample_accuracy.png')
+plt.savefig('p1a_sample_accuracy_decay.png')
+plt.legend(loc = "best")
 
 plt.show()
 
