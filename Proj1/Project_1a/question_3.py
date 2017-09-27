@@ -38,15 +38,14 @@ def shuffle_data (samples, labels):
     samples, labels = samples[idx], labels[idx]
     return samples, labels
 
-colors = {5:"blue", 10:"purple", 15:"green", 20:"black", 25:"orange"}
+colors = {5:"blue", 10:"purple", 25:"green", 50:"black", 100:"orange"}
 decay = 1e-6
 learning_rate = 0.01
 epochs = 1000
 
 batch_size = 16
 
-hidden_layer_options = [5, 10, 15, 20, 25]
-
+hidden_layer_options = [5, 10, 25, 50, 100]
 
 for neurons in hidden_layer_options:
 
@@ -122,11 +121,7 @@ for neurons in hidden_layer_options:
     train_cost = []
     time_list = []
 
-
-
     start_time = time.time()
-
-
 
     for i in range(epochs):
         if i % 200 == 0:
@@ -177,6 +172,3 @@ plt.ylabel('time in seconds')
 plt.title('time')
 plt.savefig('p1a_sample_time_neurons.png')
 plt.show()
-
-
-
