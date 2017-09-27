@@ -41,18 +41,14 @@ def shuffle_data (samples, labels):
 colors = {5:"blue", 10:"purple", 15:"green", 20:"black", 25:"orange"}
 decay = 1e-6
 learning_rate = 0.01
-epochs = 100
+epochs = 1000
 
-#Was 32
-#batch_size = 32
-
-batch_size = 16
+batch_size = 32
 
 hidden_layer_options = [5, 10, 15, 20, 25]
 
 
 for neurons in hidden_layer_options:
-
 
     # theano expressions
     X = T.matrix() #features
@@ -135,7 +131,6 @@ for neurons in hidden_layer_options:
     for i in range(epochs):
         if i % 200 == 0:
             print("Batch size: " + str(batch_size) + ", iteration: " + str(i) +" of " + str(epochs))
-
         trainX, trainY = shuffle_data(trainX, trainY)
         cost = 0.0
         for start, end in zip(range(0, n, batch_size), range(batch_size, n, batch_size)):
