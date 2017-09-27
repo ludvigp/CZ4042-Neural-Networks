@@ -156,6 +156,10 @@ plt.savefig('p1a_sample_accuracy.png')
 plt.legend(loc = "best")
 
 plt.figure("time")
+plt.xlabel('iterations')
+plt.ylabel('time in seconds')
+plt.title('time')
+plt.savefig('p1a_sample_time.png')
 plt.legend(loc = "best")
 
 plt.show()
