@@ -147,8 +147,6 @@ for neurons in hidden_layer_options:
     plt.plot(range(epochs), test_accuracy, color=colors[neurons], label="Neurons: " + str(neurons))
     plt.figure("time")
     plt.plot(range(epochs), time_list, color=colors[neurons], label="Neurons: " + str(neurons))
-    plt.annotate("%0.1f" % max(time_list), xy = (1, max(time_list)), xytext = (8,0),
-                 textcoords = "offset points", ha = "right", va = "center")
 
 
 
@@ -174,6 +172,9 @@ plt.legend(loc = "best")
 
 plt.figure("time")
 plt.legend(loc = "best")
+plt.xlabel('iterations')
+plt.ylabel('time in seconds')
+plt.title('time')
 plt.show()
 
 

@@ -158,6 +158,8 @@ plt.legend(loc = "best")
 plt.figure("time")
 plt.legend(loc = "best")
 
+
+
 plt.show()
 
 
