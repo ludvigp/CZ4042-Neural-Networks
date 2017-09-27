@@ -145,6 +145,7 @@ plt.xlabel('iterations')
 plt.ylabel('cross-entropy')
 plt.title('training cost')
 plt.savefig('p1a_sample_cost.png')
+plt.legend(loc = "best")
 
 plt.figure("accuracy")
 #plt.plot(range(epochs), test_accuracy)
@@ -152,6 +153,10 @@ plt.xlabel('iterations')
 plt.ylabel('accuracy')
 plt.title('test accuracy')
 plt.savefig('p1a_sample_accuracy.png')
+plt.legend(loc = "best")
+
+plt.figure("time")
+plt.legend(loc = "best")
 
 plt.show()
 
