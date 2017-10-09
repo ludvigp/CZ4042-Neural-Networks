@@ -163,7 +163,7 @@ plt.plot(range(epochs), time_list)
 plt.xlabel('iterations')
 plt.ylabel('time in seconds')
 plt.title('time')
-plt.savefig('p4a_sample_cost_4layers.png')
+plt.savefig('p4a_sample_time_4layers.png')
 plt.legend(loc="best")
 
 plt.show()
