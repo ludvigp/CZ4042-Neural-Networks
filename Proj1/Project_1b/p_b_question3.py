@@ -11,7 +11,7 @@ np.random.seed(10)
 epochs = 1000
 batch_size = 32
 no_hidden1 = 30  # num of neurons in hidden layer 1
-learning_rate = 0.001
+learning_rate = 0.0001
 
 floatX = theano.config.floatX
 
@@ -34,122 +34,160 @@ def shuffle_data(samples, labels):
 
 
 # read and divide data into test and train sets
-cal_housing = np.loadtxt('cal_housing.data', delimiter=',')
-X_data, Y_data = cal_housing[:, :8], cal_housing[:, -1]
-Y_data = (np.asmatrix(Y_data)).transpose()
 
-X_data, Y_data = shuffle_data(X_data, Y_data)
 
-# separate train and test data
-m = 3 * X_data.shape[0] // 10
-testX, testY = X_data[:m], Y_data[:m]
-trainX, trainY = X_data[m:], Y_data[m:]
 
-# scale and normalize data
-trainX_max, trainX_min = np.max(trainX, axis=0), np.min(trainX, axis=0)
-testX_max, testX_min = np.max(testX, axis=0), np.min(testX, axis=0)
+#Try different learning rates
 
-trainX = scale(trainX, trainX_min, trainX_max)
-testX = scale(testX, testX_min, testX_max)
+hidden_layer_neurons_possibilities = [20, 30, 40, 50, 60]
+colors = colors = ["blue", "purple", "green", "black", "orange"]
 
-trainX_mean, trainX_std = np.mean(trainX, axis=0), np.std(trainX, axis=0)
-testX_mean, testX_std = np.mean(testX, axis=0), np.std(testX, axis=0)
 
-trainX = normalize(trainX, trainX_mean, trainX_std)
-testX = normalize(testX, testX_mean, testX_std)
+for no_hidden1 in [hidden_layer_neurons_possibilities[3]]:
+    cal_housing = np.loadtxt('cal_housing.data', delimiter=',')
+    X_data, Y_data = cal_housing[:, :8], cal_housing[:, -1]
+    Y_data = (np.asmatrix(Y_data)).transpose()
 
-no_features = trainX.shape[1]
-x = T.matrix('x')  # data sample
-d = T.matrix('d')  # desired output
-no_samples = T.scalar('no_samples')
+    X_data, Y_data = shuffle_data(X_data, Y_data)
 
-# initialize weights and biases for hidden layer(s) and output layer
-w_o = theano.shared(np.random.randn(no_hidden1) * .01, floatX)
-b_o = theano.shared(np.random.randn() * .01, floatX)
-w_h1 = theano.shared(np.random.randn(no_features, no_hidden1) * .01, floatX)
-b_h1 = theano.shared(np.random.randn(no_hidden1) * 0.01, floatX)
+    # separate train and test data
+    m = 3 * X_data.shape[0] // 10
+    testX, testY = X_data[:m], Y_data[:m]
+    trainX, trainY = X_data[m:], Y_data[m:]
 
-# learning rate
-alpha = theano.shared(learning_rate, floatX)
+    # scale and normalize data
+    trainX_max, trainX_min = np.max(trainX, axis=0), np.min(trainX, axis=0)
+    testX_max, testX_min = np.max(testX, axis=0), np.min(testX, axis=0)
 
-# Define mathematical expression:
-h1_out = T.nnet.sigmoid(T.dot(x, w_h1) + b_h1)
-y = T.dot(h1_out, w_o) + b_o
+    trainX = scale(trainX, trainX_min, trainX_max)
+    testX = scale(testX, testX_min, testX_max)
 
-cost = T.abs_(T.mean(T.sqr(d - y)))
-accuracy = T.mean(d - y)
+    trainX_mean, trainX_std = np.mean(trainX, axis=0), np.std(trainX, axis=0)
+    testX_mean, testX_std = np.mean(testX, axis=0), np.std(testX, axis=0)
 
-# define gradients
-dw_o, db_o, dw_h, db_h = T.grad(cost, [w_o, b_o, w_h1, b_h1])
+    trainX = normalize(trainX, trainX_mean, trainX_std)
+    testX = normalize(testX, testX_mean, testX_std)
 
-train = theano.function(
-    inputs=[x, d],
-    outputs=cost,
-    updates=[[w_o, w_o - alpha * dw_o],
-             [b_o, b_o - alpha * db_o],
-             [w_h1, w_h1 - alpha * dw_h],
-             [b_h1, b_h1 - alpha * db_h]],
-    allow_input_downcast=True
-)
+    no_features = trainX.shape[1]
+    x = T.matrix('x')  # data sample
+    d = T.matrix('d')  # desired output
+    no_samples = T.scalar('no_samples')
 
-test = theano.function(
-    inputs=[x, d],
-    outputs=[y, cost, accuracy],
-    allow_input_downcast=True
-)
+    # initialize weights and biases for hidden layer(s) and output layer
+    w_o = theano.shared(np.random.randn(no_hidden1) * .01, floatX)
+    b_o = theano.shared(np.random.randn() * .01, floatX)
+    w_h1 = theano.shared(np.random.randn(no_features, no_hidden1) * .01, floatX)
+    b_h1 = theano.shared(np.random.randn(no_hidden1) * 0.01, floatX)
 
-train_cost = np.zeros(epochs)
-test_cost = np.zeros(epochs)
-test_accuracy = np.zeros(epochs)
+    # learning rate
+    alpha = theano.shared(learning_rate, floatX)
 
-min_error = 1e+15
-best_iter = 0
-best_w_o = np.zeros(no_hidden1)
-best_w_h1 = np.zeros([no_features, no_hidden1])
-best_b_o = 0
-best_b_h1 = np.zeros(no_hidden1)
+    # Define mathematical expression:
+    h1_out = T.nnet.sigmoid(T.dot(x, w_h1) + b_h1)
+    y = T.dot(h1_out, w_o) + b_o
 
-alpha.set_value(learning_rate)
-print(alpha.get_value())
+    cost = T.abs_(T.mean(T.sqr(d - y)))
+    accuracy = T.mean(d - y)
 
-t = time.time()
-for iter in range(epochs):
-    if iter % 100 == 0:
-        print(iter)
+    # define gradients
+    dw_o, db_o, dw_h, db_h = T.grad(cost, [w_o, b_o, w_h1, b_h1])
 
-    trainX, trainY = shuffle_data(trainX, trainY)
-    train_cost[iter] = train(trainX, np.transpose(trainY))
-    pred, test_cost[iter], test_accuracy[iter] = test(testX, np.transpose(testY))
+    train = theano.function(
+        inputs=[x, d],
+        outputs=cost,
+        updates=[[w_o, w_o - alpha * dw_o],
+                 [b_o, b_o - alpha * db_o],
+                 [w_h1, w_h1 - alpha * dw_h],
+                 [b_h1, b_h1 - alpha * db_h]],
+        allow_input_downcast=True
+    )
 
-    if test_cost[iter] < min_error:
-        best_iter = iter
-        min_error = test_cost[iter]
-        best_w_o = w_o.get_value()
-        best_w_h1 = w_h1.get_value()
-        best_b_o = b_o.get_value()
-        best_b_h1 = b_h1.get_value()
+    test = theano.function(
+        inputs=[x, d],
+        outputs=[y, cost, accuracy],
+        allow_input_downcast=True
+    )
+    train_cost = np.zeros(epochs)
+    test_cost = np.zeros(epochs)
+    test_accuracy = np.zeros(epochs)
 
-# set weights and biases to values at which performance was best
-w_o.set_value(best_w_o)
-b_o.set_value(best_b_o)
-w_h1.set_value(best_w_h1)
-b_h1.set_value(best_b_h1)
+    min_error = 1e+15
+    best_iter = 0
+    best_w_o = np.zeros(no_hidden1)
+    best_w_h1 = np.zeros([no_features, no_hidden1])
+    best_b_o = 0
+    best_b_h1 = np.zeros(no_hidden1)
 
-best_pred, best_cost, best_accuracy = test(testX, np.transpose(testY))
+    alpha.set_value(learning_rate)
+    print(no_hidden1)
 
-print('Minimum error: %.1f, Best accuracy %.1f, Number of Iterations: %d' % (best_cost, best_accuracy, best_iter))
+    t = time.time()
+    for iter in range(epochs):
+        if iter % 100 == 0:
+            print(iter)
 
-# Plots
-plt.figure()
-plt.plot(range(epochs), train_cost, label='train error')
-plt.plot(range(epochs), test_cost, label='test error')
+        trainX, trainY = shuffle_data(trainX, trainY)
+        train_cost[iter] = train(trainX, np.transpose(trainY))
+        pred, test_cost[iter], test_accuracy[iter] = test(testX, np.transpose(testY))
+
+        if test_cost[iter] < min_error:
+            best_iter = iter
+            min_error = test_cost[iter]
+            best_w_o = w_o.get_value()
+            best_w_h1 = w_h1.get_value()
+            best_b_o = b_o.get_value()
+            best_b_h1 = b_h1.get_value()
+
+    # set weights and biases to values at which performance was best
+    w_o.set_value(best_w_o)
+    b_o.set_value(best_b_o)
+    w_h1.set_value(best_w_h1)
+    b_h1.set_value(best_b_h1)
+
+    best_pred, best_cost, best_accuracy = test(testX, np.transpose(testY))
+
+    print('Minimum error: %.1f, Best accuracy %.1f, Number of Iterations: %d' % (best_cost, best_accuracy, best_iter))
+
+    # Plots
+    plt.figure("train_error")
+    plt.plot(range(epochs), train_cost, color = colors[hidden_layer_neurons_possibilities.index(no_hidden1)],
+             label = "Hidden neurons: " + str(no_hidden1))
+
+
+
+    #Add the following code to plot accuracy for optimal number of hidden-layer neurons, 50:
+    if no_hidden1 == 50:
+        plt.figure("accuracy")
+        plt.plot(range(epochs), test_accuracy)
+        plt.xlabel('Epochs')
+        plt.ylabel('Accuracy')
+        plt.title('Test Accuracy')
+        plt.savefig('pbq3_b_accuracy.png')
+
+
+
+    """plt.figure("test_error")
+    plt.plot(range(epochs), test_cost, color = colors[learning_rate_search_space.index(learning_rate)],
+             label="Learning rate: " + str(learning_rate))"""
+
+
+plt.figure("train_error")
 plt.xlabel('Epochs')
 plt.ylabel('Mean Squared Error')
-plt.title('Training and Test Errors at Alpha = %.4f' % learning_rate)
-plt.legend()
-plt.savefig('p_1b_sample_mse.png')
+plt.title('Training Errors at different learning rates')
+plt.legend(loc = "best")
+plt.savefig("pbq3_train_error")
+
+
+"""plt.figure("test_error")
+plt.xlabel('Epochs')
+plt.ylabel('Mean Squared Error')
+plt.title('Test Errors at different learning rates')
+plt.legend(loc = "best")
+"""
 plt.show()
 
+"""
 plt.figure()
 plt.plot(range(epochs), test_accuracy)
 plt.xlabel('Epochs')
@@ -157,3 +195,4 @@ plt.ylabel('Accuracy')
 plt.title('Test Accuracy')
 plt.savefig('p_1b_sample_accuracy.png')
 plt.show()
+"""
