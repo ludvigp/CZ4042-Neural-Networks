@@ -40,7 +40,7 @@ def shuffle_data(samples, labels):
 #Try different learning rates
 
 learning_rate_search_space = [1e-3, 0.5*1e-3, 1e-4, 0.5*1e-4, 1e-5]
-colors = colors = ["blue", "purple", "green", "black", "orange"]
+colors = ["blue", "purple", "green", "black", "orange"]
 
 
 for learning_rate in learning_rate_search_space:
@@ -161,15 +161,12 @@ for learning_rate in learning_rate_search_space:
 
     #Add this code for plot of accuracy of best learning rate, 1e-4.
 
-    if learning_rate == 1e-4:
-        plt.figure("accuracy")
-        plt.plot(range(epochs), test_accuracy, label = "Learning rate " + str(learning_rate),
+
+    plt.figure("accuracy")
+    plt.plot(range(epochs), test_accuracy, label = "Learning rate " + str(learning_rate),
                  color = colors[learning_rate_search_space.index(learning_rate)])
 
-        plt.xlabel('Epochs')
-        plt.ylabel('Accuracy')
-        plt.title('Test Accuracy')
-        plt.savefig('pbq2_b_accuracy.png')
+
 
 
 
@@ -189,6 +186,12 @@ plt.title('Test Errors at different learning rates')
 plt.legend(loc = "best")
 plt.savefig("pbq2_test_error")
 
+
+plt.figure("accuracy")
+plt.xlabel('Epochs')
+plt.ylabel('Accuracy')
+plt.title('Test Accuracy')
+plt.savefig('pbq2_b_accuracy.png')
 
 plt.show()
 

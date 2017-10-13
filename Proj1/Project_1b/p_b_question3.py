@@ -43,7 +43,7 @@ hidden_layer_neurons_possibilities = [20, 30, 40, 50, 60]
 colors = colors = ["blue", "purple", "green", "black", "orange"]
 
 
-for no_hidden1 in [hidden_layer_neurons_possibilities[3]]:
+for no_hidden1 in hidden_layer_neurons_possibilities:
     cal_housing = np.loadtxt('cal_housing.data', delimiter=',')
     X_data, Y_data = cal_housing[:, :8], cal_housing[:, -1]
     Y_data = (np.asmatrix(Y_data)).transpose()
