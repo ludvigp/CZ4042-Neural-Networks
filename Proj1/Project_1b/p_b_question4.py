@@ -15,7 +15,7 @@ learning_rate = 0.0001
 
 floatX = theano.config.floatX
 
-
+ 
 # scale and normalize input data
 def scale(X, X_min, X_max):
     return (X - X_min) / (X_max - X_min)
@@ -68,8 +68,7 @@ for layer in [3, 4, 5]:
     no_hidden3 = 20
 
     # initialize weights and biases for hidden layer(s) and output layer
-    w_o = theano.shared(np.random.randn(no_hidden2) * .01, floatX)
-    b_o = theano.shared(np.random.randn() * .01, floatX)
+
     w_h1 = theano.shared(np.random.randn(no_features, no_hidden1) * .01, floatX)
     b_h1 = theano.shared(np.random.randn(no_hidden1) * 0.01, floatX)
 
@@ -82,10 +81,14 @@ for layer in [3, 4, 5]:
 
     # learning rate
     alpha = theano.shared(learning_rate, floatX)
-
+    alpha.set_value(learning_rate)
 
     if layer == 3:
-        print("Layer 3")
+
+        w_o = theano.shared(np.random.randn(no_hidden1) * .01, floatX)
+        b_o = theano.shared(np.random.randn() * .01, floatX)
+
+
         h1_out = T.nnet.sigmoid(T.dot(x, w_h1) + b_h1)
         y = T.dot(h1_out, w_o) + b_o
 
@@ -106,17 +109,15 @@ for layer in [3, 4, 5]:
                      [b_h1, b_h1 - alpha * db_h]],
             allow_input_downcast=True
         )
-
-
     elif layer >= 4:
 
         #Initialize weight and bias for second hidden layer
         w_h2 = theano.shared(np.random.randn(no_hidden1, no_hidden2) * 0.01, floatX)
         b_h2 = theano.shared(np.random.randn(no_hidden2) * 0.01, floatX)
-        best_w_h2 = np.zeros([no_hidden1, no_hidden2])
-        best_b_h2 = np.zeros(no_hidden2)
+
         if layer == 4:
-            print("Layer 4")
+            w_o = theano.shared(np.random.randn(no_hidden2) * .01, floatX)
+            b_o = theano.shared(np.random.randn() * .01, floatX)
             h1_out = T.nnet.sigmoid(T.dot(x, w_h1) + b_h1)
             h2_out = T.nnet.sigmoid(T.dot(h1_out, w_h2) + b_h2)
             y = T.dot(h2_out, w_o) + b_o
@@ -142,9 +143,11 @@ for layer in [3, 4, 5]:
             )
 
             #Initialize variables for when iteration was best
-
+            best_w_h2 = np.zeros([no_hidden1, no_hidden2])
+            best_b_h2 = np.zeros(no_hidden2)
         elif layer == 5:
-            print("Layer 5")
+            w_o = theano.shared(np.random.randn(no_hidden3) * .01, floatX)
+            b_o = theano.shared(np.random.randn() * .01, floatX)
             w_h3 = theano.shared(np.random.randn(no_hidden2, no_hidden3) * 0.01, floatX)
             b_h3 = theano.shared(np.random.randn(no_hidden3) * 0.01, floatX)
 
@@ -180,6 +183,8 @@ for layer in [3, 4, 5]:
 
     # Define mathematical expression:
 
+
+
     test = theano.function(
         inputs=[x, d],
         outputs=[y, cost, accuracy],
@@ -193,15 +198,15 @@ for layer in [3, 4, 5]:
     min_error = 1e+15
     best_iter = 0
 
-    alpha.set_value(learning_rate)
 
     print(alpha.get_value())
 
     for iter in range(epochs):
-        #if iter % 100 == 0:
-        print(iter)
+        if iter % 100 == 0:
+            print(iter)
 
         trainX, trainY = shuffle_data(trainX, trainY)
+
         train_cost[iter] = train(trainX, np.transpose(trainY))
 
         pred, test_cost[iter], test_accuracy[iter] = test(testX, np.transpose(testY))
@@ -259,7 +264,8 @@ plt.figure("accuracy")
 plt.xlabel('Epochs')
 plt.ylabel('Accuracy')
 plt.title('Test Accuracy')
+plt.legend(loc = "best")
 plt.savefig('pbq4_accuracy.png')
-plt.figure()
+
 
 plt.show()
