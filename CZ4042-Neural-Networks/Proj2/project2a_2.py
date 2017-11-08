@@ -11,7 +11,7 @@ from theano.tensor.signal import pool
 
 np.random.seed(10)
 batch_size = 128
-noIters = 25
+noIters = 100
 
 
 def init_weights_bias4(filter_shape, d_type):
@@ -154,40 +154,53 @@ for i in range(num_filters1):
     pylab.subplot(5, 3, i + 1); pylab.axis('off'); pylab.imshow(w[i, :, :, :].reshape(9, 9))
 pylab.savefig('figure_2a2_filtersLearned.png')
 
-ind = np.random.randint(low=0, high=2000)
-convolved, pooled = test(teX[ind:ind + 1, :])
-ind = np.random.randint(low=0, high=2000)
-convolved2, pooled2 = test2(teX[ind:ind + 1, :])
+for j in range(2):
+    ind = np.random.randint(low=0, high=2000)
+    print("Ind: " + str(ind))
+    convolved, pooled = test(teX[ind:ind+1,:])
+    convolved2, pooled2 = test2(teX[ind:ind+1,:])
 
-pylab.figure('input image')
-pylab.gray()
-pylab.axis('off');
-pylab.imshow(teX[ind, :].reshape(28, 28))
-pylab.savefig('figure_2a2_inputImage.png')
 
-pylab.figure('convolved feature maps_1')
-pylab.gray()
-for i in range(num_filters1):
-    pylab.subplot(5, 3, i + 1); pylab.axis('off'); pylab.imshow(convolved[0, i, :].reshape(20, 20))
-pylab.savefig('figure_2a2_conv1.png')
+    #Plot input image
+    pylab.figure('input image_' + str(j+1))
+    pylab.gray()
+    pylab.axis('off'); pylab.imshow(teX[ind,:].reshape(28,28))
+    pylab.savefig('figure_2a2_inputImage_' + str(j+1) + '.png')
 
-pylab.figure('pooled feature maps_1')
-pylab.gray()
-for i in range(num_filters1):
-    pylab.subplot(5, 3, i + 1); pylab.axis('off'); pylab.imshow(pooled[0, i, :].reshape(10, 10))
-pylab.savefig('figure_2a2_pool1.png')
 
-pylab.figure('convolved_2')
-pylab.gray()
-for i in range(num_filters2):
-    pylab.subplot(5, 4, i + 1); pylab.axis('off'); pylab.imshow(convolved2[0, i, :].reshape(6, 6))
-pylab.savefig('figure_2a2_conv2.png')
+    #Plot feature maps for for convolution layer 1
+    pylab.figure('convolved feature maps_1_' + str(j+1))
+    pylab.gray()
+    for i in range(num_filters1):
+        # Plot the maps in the shape 5*3
+        pylab.subplot(5, 3, i+1); pylab.axis('off'); pylab.imshow(convolved[0,i,:].reshape(20,20))
+    pylab.savefig('figure_2a2_conv1_' + str(j+1) + '.png')
 
-pylab.figure('pool_2')
-pylab.gray()
-for i in range(num_filters2):
-    pylab.subplot(5, 4, i + 1); pylab.axis('off'); pylab.imshow(pooled2[0, i, :].reshape(3, 3))
-pylab.savefig('figure_2a2_pool2.png')
+    #Plot feature maps for pooling layer 1
+    pylab.figure('pooled feature maps_1_' + str(j+1))
+    pylab.gray()
+    for i in range(num_filters1):
+        # Plot the maps in the shape 5*3
+        pylab.subplot(5, 3, i+1); pylab.axis('off'); pylab.imshow(pooled[0,i,:].reshape(10,10))
+    pylab.savefig('figure_2a2_pool1_' + str(j+1) + '.png')
+
+
+    #plot feature maps for convolution layer 2
+    pylab.figure('convolved_2_' + str(j+1))
+    pylab.gray()
+    for i in range(num_filters2):
+        #Plot the maps in the shape 5*4
+        pylab.subplot(5, 4, i+1); pylab.axis('off'); pylab.imshow(convolved2[0,i,:].reshape(6,6))
+    pylab.savefig('figure_2a2_conv2_' + str(j+1) + '.png')
+
+
+    #plot feature maps for pooling layer 2
+    pylab.figure('pool_2_' + str(j+1))
+    pylab.gray()
+    for i in range(num_filters2):
+        #Plot the maps in the shape 5*4
+        pylab.subplot(5, 4, i+1); pylab.axis('off'); pylab.imshow(pooled2[0,i,:].reshape(3,3))
+    pylab.savefig('figure_2a2_pool2_' + str(j+1) + '.png')
 
 pylab.show()
 
