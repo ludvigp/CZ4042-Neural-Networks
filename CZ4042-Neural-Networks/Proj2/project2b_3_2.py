@@ -21,6 +21,18 @@ def init_weights(n_visible, n_hidden):
 def init_bias(n):
     return theano.shared(value=np.zeros(n,dtype=theano.config.floatX),borrow=True)
 
+#Momentum
+#Decay parameter ??
+def sgd_momentum(cost, params, lr=0.1, decay=0.0001, momentum=0.1):
+    grads = T.grad(cost=cost, wrt=params)
+    updates = []
+    for p, g in zip(params, grads):
+        v = theano.shared(p.get_value())
+        v_new = momentum*v - (g + decay*p) * lr
+        updates.append([p, p + v_new])
+        updates.append([v, v_new])
+        return updates
+
 trX, teX, trY, teY = mnist()
 
 trX, trY = trX[:12000], trY[:12000]
@@ -37,7 +49,8 @@ corruption_level=0.1
 training_epochs = 5
 learning_rate = 0.1
 batch_size = 128
-
+beta = 0.5
+rho = 0.05
 
 W1 = init_weights(28*28, 900)
 b1 = init_bias(900)
@@ -54,6 +67,9 @@ b3 = init_bias(400)
 b3_prime = init_bias(625)
 W3_prime = W3.transpose()
 
+W4 = init_weights(400, 10)
+b4 = init_bias(10)
+
 
 
 tilde_x = theano_rng.binomial(size=x.shape, n=1, p=1 - corruption_level,
@@ -67,48 +83,50 @@ z2 = T.nnet.sigmoid(T.dot(y2, W2_prime) + b2_prime)
 y3 = T.nnet.sigmoid(T.dot(y2, W3) + b3)
 z3 = T.nnet.sigmoid(T.dot(y3, W3_prime) + b3_prime)
 
-cost1 = - T.mean(T.sum(x * T.log(z1) + (1 - x) * T.log(1 - z1), axis=1))
-cost2 = - T.mean(T.sum(y1 * T.log(z2) + (1 - y1) * T.log(1 - z2), axis=1))
-cost3 = - T.mean(T.sum(y2 * T.log(z3) + (1 - y2) * T.log(1 - z3), axis=1))
+
+cost1 = - T.mean(T.sum(x * T.log(z1) + (1 - x) * T.log(1 - z1), axis=1)) \
+				+ beta*T.shape(z1)[1]*(rho*T.log(rho) + (1-rho)*T.log(1-rho)) \
+				- beta*rho*T.sum(T.log(T.mean(z1, axis=0)+1e-6)) \
+				- beta*(1-rho)*T.sum(T.log(1-T.mean(z1, axis=0)+1e-6))
+
+cost2 = - T.mean(T.sum(y1 * T.log(z2) + (1 - y1) * T.log(1 - z2), axis=1)) \
+				+ beta*T.shape(z2)[1]*(rho*T.log(rho) + (1-rho)*T.log(1-rho)) \
+				- beta*rho*T.sum(T.log(T.mean(z2, axis=0)+1e-6)) \
+				- beta*(1-rho)*T.sum(T.log(1-T.mean(z2, axis=0)+1e-6))
+
+cost3 = - T.mean(T.sum(y2 * T.log(z3) + (1 - y2) * T.log(1 - z3), axis=1)) \
+				+ beta*T.shape(z1)[1]*(rho*T.log(rho) + (1-rho)*T.log(1-rho)) \
+				- beta*rho*T.sum(T.log(T.mean(z3, axis=0)+1e-6)) \
+				- beta*(1-rho)*T.sum(T.log(1-T.mean(z3, axis=0)+1e-6))
+
+
+
 
 params1 = [W1, b1, b1_prime]
-grads1 = T.grad(cost1, params1)
-
-updates1 = [(param1, param1 - learning_rate * grad1)
-           for param1, grad1 in zip(params1, grads1)]
+updates1 = sgd_momentum(cost1, params1)
 train_da1 = theano.function(inputs=[x], outputs = cost1, updates = updates1, allow_input_downcast = True)
 
-
 params2 = [W2, b2, b2_prime]
-grads2 = T.grad(cost2, params2)
-
-updates2 = [(param2, param2 - learning_rate * grad2)
-           for param2, grad2 in zip(params2, grads2)]
+updates2 = sgd_momentum(cost2, params2)
 train_da2 = theano.function(inputs=[x], outputs = cost2, updates = updates2, allow_input_downcast = True)
 
 params3 = [W3, b3, b3_prime]
-grads3 = T.grad(cost3, params3)
-
-updates3 = [(param3, param3 - learning_rate * grad3)
-           for param3, grad3 in zip(params3, grads3)]
+updates3 = sgd_momentum(cost3, params3)
 train_da3 = theano.function(inputs=[x], outputs = cost3, updates = updates3, allow_input_downcast = True)
 
 
+##Softmax
+p_y4 = T.nnet.softmax(T.dot(y3, W4)+b4)
+y4 = T.argmax(p_y4, axis=1)
+cost4 = T.mean(T.nnet.categorical_crossentropy(p_y4, d))
 
+params4 = [W1, b1, W2, b2, W3, b3, W4, b4]
+grads4 = T.grad(cost4, params4)
+updates4 = [(param4, param4 - learning_rate * grad4)
+           for param4, grad4 in zip(params4, grads4)]
+train_ffn = theano.function(inputs=[x, d], outputs = cost4, updates = updates4, allow_input_downcast = True)
+test_ffn = theano.function(inputs=[x], outputs = y4, allow_input_downcast=True)
 
-
-"""
-p_y2 = T.nnet.softmax(T.dot(y1, W2)+b2)
-y2 = T.argmax(p_y2, axis=1)
-cost2 = T.mean(T.nnet.categorical_crossentropy(p_y2, d))
-
-params2 = [W1, b1, W2, b2]
-grads2 = T.grad(cost2, params2)
-updates2 = [(param2, param2 - learning_rate * grad2)
-           for param2, grad2 in zip(params2, grads2)]
-train_ffn = theano.function(inputs=[x, d], outputs = cost2, updates = updates2, allow_input_downcast = True)
-test_ffn = theano.function(inputs=[x], outputs = y2, allow_input_downcast=True)
-"""
 
 print('training dae1 ...')
 d = []
@@ -120,10 +138,6 @@ for epoch in range(training_epochs):
     d.append(np.mean(c, dtype='float64'))
     print(d[epoch])
 
-pylab.figure("Cross entropy hidden layers")
-pylab.plot(range(training_epochs), d, color = "blue", label = "Training layer 1")
-pylab.xlabel('iterations')
-pylab.ylabel('cross-entropy')
 
 print("\ntraining dae2")
 d = []
@@ -136,10 +150,7 @@ for epoch in range(training_epochs):
     print(d[epoch])
 
 
-pylab.plot(range(training_epochs), d, color = "red", label = "Training layer 2")
-
-
-print("\training dae3")
+print("\ntraining dae3")
 d = []
 for epoch in range(training_epochs):
     # go through trainng set
@@ -149,22 +160,7 @@ for epoch in range(training_epochs):
     d.append(np.mean(c, dtype='float64'))
     print(d[epoch])
 
-pylab.plot(range(training_epochs), d, color = "green", label = "Training layer 3")
-pylab.plt.legend(loc = "best")
 
-
-
-
-w1 = W1.get_value()
-pylab.figure()
-pylab.gray()
-for i in range(100):
-    pylab.subplot(10, 10, i+1); pylab.axis('off'); pylab.imshow(w1[:,i].reshape(28,28))
-pylab.savefig('figure_2b_2.png')
-
-
-
-"""
 print('\ntraining ffn ...')
 d, a = [], []
 for epoch in range(training_epochs):
@@ -176,23 +172,17 @@ for epoch in range(training_epochs):
     a.append(np.mean(np.argmax(teY, axis=1) == test_ffn(teX)))
     print(a[epoch])
 
-pylab.figure()
+pylab.figure("Cross entropy")
 pylab.plot(range(training_epochs), d)
 pylab.xlabel('iterations')
 pylab.ylabel('cross-entropy')
 pylab.savefig('figure_2b_3.png')
 
-pylab.figure()
+pylab.figure("Test accuracy")
 pylab.plot(range(training_epochs), a)
 pylab.xlabel('iterations')
 pylab.ylabel('test accuracy')
 pylab.savefig('figure_2b_4.png')
-pylab.show()
 
-w2 = W2.get_value()
-pylab.figure()
-pylab.gray()
-pylab.axis('off'); pylab.imshow(w2)
-pylab.savefig('figure_2b_5.png')
-"""
+
 pylab.show()
