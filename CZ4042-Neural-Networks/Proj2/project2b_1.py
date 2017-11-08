@@ -55,7 +55,6 @@ b3_prime = init_bias(625)
 W3_prime = W3.transpose()
 
 
-
 tilde_x = theano_rng.binomial(size=x.shape, n=1, p=1 - corruption_level,
                               dtype=theano.config.floatX)*x
 y1 = T.nnet.sigmoid(T.dot(tilde_x, W1) + b1)
@@ -94,22 +93,6 @@ updates3 = [(param3, param3 - learning_rate * grad3)
 train_da3 = theano.function(inputs=[x], outputs = cost3, updates = updates3, allow_input_downcast = True)
 
 
-
-
-
-"""
-p_y2 = T.nnet.softmax(T.dot(y1, W2)+b2)
-y2 = T.argmax(p_y2, axis=1)
-cost2 = T.mean(T.nnet.categorical_crossentropy(p_y2, d))
-
-params2 = [W1, b1, W2, b2]
-grads2 = T.grad(cost2, params2)
-updates2 = [(param2, param2 - learning_rate * grad2)
-           for param2, grad2 in zip(params2, grads2)]
-train_ffn = theano.function(inputs=[x, d], outputs = cost2, updates = updates2, allow_input_downcast = True)
-test_ffn = theano.function(inputs=[x], outputs = y2, allow_input_downcast=True)
-"""
-
 print('training dae1 ...')
 d = []
 for epoch in range(training_epochs):
@@ -139,7 +122,7 @@ for epoch in range(training_epochs):
 pylab.plot(range(training_epochs), d, color = "red", label = "Training layer 2")
 
 
-print("\training dae3")
+print("\ntraining dae3")
 d = []
 for epoch in range(training_epochs):
     # go through trainng set
@@ -153,46 +136,27 @@ pylab.plot(range(training_epochs), d, color = "green", label = "Training layer 3
 pylab.plt.legend(loc = "best")
 
 
-
-
 w1 = W1.get_value()
-pylab.figure()
+pylab.figure('Hidden Layer 1')
 pylab.gray()
 for i in range(100):
     pylab.subplot(10, 10, i+1); pylab.axis('off'); pylab.imshow(w1[:,i].reshape(28,28))
 pylab.savefig('figure_2b_2.png')
 
 
-
-"""
-print('\ntraining ffn ...')
-d, a = [], []
-for epoch in range(training_epochs):
-    # go through trainng set
-    c = []
-    for start, end in zip(range(0, len(trX), batch_size), range(batch_size, len(trX), batch_size)):
-        c.append(train_ffn(trX[start:end], trY[start:end]))
-    d.append(np.mean(c, dtype='float64'))
-    a.append(np.mean(np.argmax(teY, axis=1) == test_ffn(teX)))
-    print(a[epoch])
-
-pylab.figure()
-pylab.plot(range(training_epochs), d)
-pylab.xlabel('iterations')
-pylab.ylabel('cross-entropy')
-pylab.savefig('figure_2b_3.png')
-
-pylab.figure()
-pylab.plot(range(training_epochs), a)
-pylab.xlabel('iterations')
-pylab.ylabel('test accuracy')
-pylab.savefig('figure_2b_4.png')
-pylab.show()
-
 w2 = W2.get_value()
-pylab.figure()
+pylab.figure('Hidden Layer 2')
 pylab.gray()
-pylab.axis('off'); pylab.imshow(w2)
+for i in range(100):
+    pylab.subplot(10, 10, i+1); pylab.axis('off'); pylab.imshow(w2[:,i].reshape(30,30))
 pylab.savefig('figure_2b_5.png')
-"""
+
+w3 = W3.get_value()
+pylab.figure('Hidden Layer 3')
+pylab.gray()
+for i in range(100):
+    pylab.subplot(10, 10, i+1); pylab.axis('off'); pylab.imshow(w3[:,i].reshape(25,25))
+pylab.savefig('figure_2b_6.png')
+
+
 pylab.show()
