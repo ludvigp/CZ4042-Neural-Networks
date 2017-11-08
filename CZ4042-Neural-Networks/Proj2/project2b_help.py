@@ -42,22 +42,47 @@ batch_size = 128
 W1 = init_weights(28*28, 900)
 b1 = init_bias(900)
 b1_prime = init_bias(28*28)
-W1_prime = W1.transpose() 
-W2 = init_weights(900, 10)
-b2 = init_bias(10)
+W1_prime = W1.transpose()
+
+W2 = init_weights(900, 625)
+b2 = init_bias(625)
+b2_prime = init_bias(900)
+W2_prime = W2.transpose()
+
+W3 = init_weights(625, 400)
+b3 = init_bias(400)
+b3_prime = init_bias(625)
+W3_prime = W3.transpose()
+
+
 
 tilde_x = theano_rng.binomial(size=x.shape, n=1, p=1 - corruption_level,
                               dtype=theano.config.floatX)*x
 y1 = T.nnet.sigmoid(T.dot(tilde_x, W1) + b1)
 z1 = T.nnet.sigmoid(T.dot(y1, W1_prime) + b1_prime)
+
+y2 = T.nnet.sigmoid(T.dot(z1, W2) + b2)
+z2 = T.nnet.sigmoid(T.dot(y2, W2_prime) + b2_prime)
+
+y3 = T.nnet.sigmoid(T.dot(z2, W3) + b3)
+z3 = T.nnet.sigmoid(T.dot(y3, W3_prime) + b3_prime)
+
 cost1 = - T.mean(T.sum(x * T.log(z1) + (1 - x) * T.log(1 - z1), axis=1))
+cost2 = - T.mean(T.sum(x * T.log(z2) + (1 - x) * T.log(1 - z2), axis=1))
+cost3 = - T.mean(T.sum(x * T.log(z3) + (1 - x) * T.log(1 - z3), axis=1))
 
 params1 = [W1, b1, b1_prime]
 grads1 = T.grad(cost1, params1)
+
 updates1 = [(param1, param1 - learning_rate * grad1)
            for param1, grad1 in zip(params1, grads1)]
 train_da1 = theano.function(inputs=[x], outputs = cost1, updates = updates1, allow_input_downcast = True)
 
+
+
+
+
+"""
 p_y2 = T.nnet.softmax(T.dot(y1, W2)+b2)
 y2 = T.argmax(p_y2, axis=1)
 cost2 = T.mean(T.nnet.categorical_crossentropy(p_y2, d))
@@ -68,7 +93,7 @@ updates2 = [(param2, param2 - learning_rate * grad2)
            for param2, grad2 in zip(params2, grads2)]
 train_ffn = theano.function(inputs=[x, d], outputs = cost2, updates = updates2, allow_input_downcast = True)
 test_ffn = theano.function(inputs=[x], outputs = y2, allow_input_downcast=True)
-
+"""
 
 print('training dae1 ...')
 d = []
@@ -80,11 +105,16 @@ for epoch in range(training_epochs):
     d.append(np.mean(c, dtype='float64'))
     print(d[epoch])
 
-pylab.figure()
+
+
+
+pylab.figure("Cross entropy hidden_layer1")
 pylab.plot(range(training_epochs), d)
 pylab.xlabel('iterations')
 pylab.ylabel('cross-entropy')
-pylab.savefig('figure_2b_1.png')
+pylab.savefig('figure_2b_h1.png')
+
+
 
 w1 = W1.get_value()
 pylab.figure()
@@ -94,6 +124,8 @@ for i in range(100):
 pylab.savefig('figure_2b_2.png')
 
 
+
+"""
 print('\ntraining ffn ...')
 d, a = [], []
 for epoch in range(training_epochs):
@@ -123,3 +155,5 @@ pylab.figure()
 pylab.gray()
 pylab.axis('off'); pylab.imshow(w2)
 pylab.savefig('figure_2b_5.png')
+"""
+pylab.show()

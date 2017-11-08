@@ -41,7 +41,7 @@ def shuffle_data (samples, labels):
 colors = {5:"blue", 10:"purple", 25:"green", 50:"black", 100:"orange"}
 decay = 1e-6
 learning_rate = 0.01
-epochs = 2000
+epochs = 500
 
 
 #As stated in the report, 16 was the optimal batch size. We use these in further simulations
@@ -116,8 +116,10 @@ for neurons in hidden_layer_options:
     start_time = time.time()
 
     for i in range(epochs):
+
         if i+1 % 200 == 0:
             print("Batch size: " + str(batch_size) + ", iteration: " + str(i) +" of " + str(epochs))
+        start_time = time.time()
         trainX, trainY = shuffle_data(trainX, trainY)
         cost = 0.0
         for start, end in zip(range(0, n, batch_size), range(batch_size, n, batch_size)):
