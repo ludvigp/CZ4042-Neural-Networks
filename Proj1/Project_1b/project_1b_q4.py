@@ -15,7 +15,7 @@ learning_rate = 0.0001
 
 floatX = theano.config.floatX
 
- 
+
 # scale and normalize input data
 def scale(X, X_min, X_max):
     return (X - X_min) / (X_max - X_min)
