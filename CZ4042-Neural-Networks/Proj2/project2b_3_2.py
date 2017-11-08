@@ -21,6 +21,18 @@ def init_weights(n_visible, n_hidden):
 def init_bias(n):
     return theano.shared(value=np.zeros(n,dtype=theano.config.floatX),borrow=True)
 
+#Momentum
+#Decay parameter ??
+def sgd_momentum(cost, params, lr=0.1, decay=0.0001, momentum=0.1):
+    grads = T.grad(cost=cost, wrt=params)
+    updates = []
+    for p, g in zip(params, grads):
+        v = theano.shared(p.get_value())
+        v_new = momentum*v - (g + decay*p) * lr
+        updates.append([p, p + v_new])
+        updates.append([v, v_new])
+        return updates
+
 trX, teX, trY, teY = mnist()
 
 trX, trY = trX[:12000], trY[:12000]
@@ -37,7 +49,8 @@ corruption_level=0.1
 training_epochs = 5
 learning_rate = 0.1
 batch_size = 128
-
+beta = 0.5
+rho = 0.05
 
 W1 = init_weights(28*28, 900)
 b1 = init_bias(900)
@@ -70,30 +83,35 @@ z2 = T.nnet.sigmoid(T.dot(y2, W2_prime) + b2_prime)
 y3 = T.nnet.sigmoid(T.dot(y2, W3) + b3)
 z3 = T.nnet.sigmoid(T.dot(y3, W3_prime) + b3_prime)
 
-cost1 = - T.mean(T.sum(x * T.log(z1) + (1 - x) * T.log(1 - z1), axis=1))
-cost2 = - T.mean(T.sum(y1 * T.log(z2) + (1 - y1) * T.log(1 - z2), axis=1))
-cost3 = - T.mean(T.sum(y2 * T.log(z3) + (1 - y2) * T.log(1 - z3), axis=1))
+
+cost1 = - T.mean(T.sum(x * T.log(z1) + (1 - x) * T.log(1 - z1), axis=1)) \
+				+ beta*T.shape(z1)[1]*(rho*T.log(rho) + (1-rho)*T.log(1-rho)) \
+				- beta*rho*T.sum(T.log(T.mean(z1, axis=0)+1e-6)) \
+				- beta*(1-rho)*T.sum(T.log(1-T.mean(z1, axis=0)+1e-6))
+
+cost2 = - T.mean(T.sum(y1 * T.log(z2) + (1 - y1) * T.log(1 - z2), axis=1)) \
+				+ beta*T.shape(z2)[1]*(rho*T.log(rho) + (1-rho)*T.log(1-rho)) \
+				- beta*rho*T.sum(T.log(T.mean(z2, axis=0)+1e-6)) \
+				- beta*(1-rho)*T.sum(T.log(1-T.mean(z2, axis=0)+1e-6))
+
+cost3 = - T.mean(T.sum(y2 * T.log(z3) + (1 - y2) * T.log(1 - z3), axis=1)) \
+				+ beta*T.shape(z1)[1]*(rho*T.log(rho) + (1-rho)*T.log(1-rho)) \
+				- beta*rho*T.sum(T.log(T.mean(z3, axis=0)+1e-6)) \
+				- beta*(1-rho)*T.sum(T.log(1-T.mean(z3, axis=0)+1e-6))
+
+
+
 
 params1 = [W1, b1, b1_prime]
-grads1 = T.grad(cost1, params1)
-
-updates1 = [(param1, param1 - learning_rate * grad1)
-           for param1, grad1 in zip(params1, grads1)]
+updates1 = sgd_momentum(cost1, params1)
 train_da1 = theano.function(inputs=[x], outputs = cost1, updates = updates1, allow_input_downcast = True)
 
-
 params2 = [W2, b2, b2_prime]
-grads2 = T.grad(cost2, params2)
-
-updates2 = [(param2, param2 - learning_rate * grad2)
-           for param2, grad2 in zip(params2, grads2)]
+updates2 = sgd_momentum(cost2, params2)
 train_da2 = theano.function(inputs=[x], outputs = cost2, updates = updates2, allow_input_downcast = True)
 
 params3 = [W3, b3, b3_prime]
-grads3 = T.grad(cost3, params3)
-
-updates3 = [(param3, param3 - learning_rate * grad3)
-           for param3, grad3 in zip(params3, grads3)]
+updates3 = sgd_momentum(cost3, params3)
 train_da3 = theano.function(inputs=[x], outputs = cost3, updates = updates3, allow_input_downcast = True)
 
 
