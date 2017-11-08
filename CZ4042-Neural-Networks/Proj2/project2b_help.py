@@ -34,7 +34,7 @@ rng = np.random.RandomState(123)
 theano_rng = RandomStreams(rng.randint(2 ** 30))
 
 corruption_level=0.1
-training_epochs = 25
+training_epochs = 5
 learning_rate = 0.1
 batch_size = 128
 
@@ -61,15 +61,15 @@ tilde_x = theano_rng.binomial(size=x.shape, n=1, p=1 - corruption_level,
 y1 = T.nnet.sigmoid(T.dot(tilde_x, W1) + b1)
 z1 = T.nnet.sigmoid(T.dot(y1, W1_prime) + b1_prime)
 
-y2 = T.nnet.sigmoid(T.dot(z1, W2) + b2)
+y2 = T.nnet.sigmoid(T.dot(y1, W2) + b2)
 z2 = T.nnet.sigmoid(T.dot(y2, W2_prime) + b2_prime)
 
-y3 = T.nnet.sigmoid(T.dot(z2, W3) + b3)
+y3 = T.nnet.sigmoid(T.dot(y2, W3) + b3)
 z3 = T.nnet.sigmoid(T.dot(y3, W3_prime) + b3_prime)
 
 cost1 = - T.mean(T.sum(x * T.log(z1) + (1 - x) * T.log(1 - z1), axis=1))
-cost2 = - T.mean(T.sum(x * T.log(z2) + (1 - x) * T.log(1 - z2), axis=1))
-cost3 = - T.mean(T.sum(x * T.log(z3) + (1 - x) * T.log(1 - z3), axis=1))
+cost2 = - T.mean(T.sum(y1 * T.log(z2) + (1 - y1) * T.log(1 - z2), axis=1))
+cost3 = - T.mean(T.sum(y2 * T.log(z3) + (1 - y2) * T.log(1 - z3), axis=1))
 
 params1 = [W1, b1, b1_prime]
 grads1 = T.grad(cost1, params1)
@@ -77,6 +77,21 @@ grads1 = T.grad(cost1, params1)
 updates1 = [(param1, param1 - learning_rate * grad1)
            for param1, grad1 in zip(params1, grads1)]
 train_da1 = theano.function(inputs=[x], outputs = cost1, updates = updates1, allow_input_downcast = True)
+
+
+params2 = [W2, b2, b2_prime]
+grads2 = T.grad(cost2, params2)
+
+updates2 = [(param2, param2 - learning_rate * grad2)
+           for param2, grad2 in zip(params2, grads2)]
+train_da2 = theano.function(inputs=[x], outputs = cost2, updates = updates2, allow_input_downcast = True)
+
+params3 = [W3, b3, b3_prime]
+grads3 = T.grad(cost3, params3)
+
+updates3 = [(param3, param3 - learning_rate * grad3)
+           for param3, grad3 in zip(params3, grads3)]
+train_da3 = theano.function(inputs=[x], outputs = cost3, updates = updates3, allow_input_downcast = True)
 
 
 
@@ -105,14 +120,38 @@ for epoch in range(training_epochs):
     d.append(np.mean(c, dtype='float64'))
     print(d[epoch])
 
-
-
-
-pylab.figure("Cross entropy hidden_layer1")
-pylab.plot(range(training_epochs), d)
+pylab.figure("Cross entropy hidden layers")
+pylab.plot(range(training_epochs), d, color = "blue", label = "Training layer 1")
 pylab.xlabel('iterations')
 pylab.ylabel('cross-entropy')
-pylab.savefig('figure_2b_h1.png')
+
+print("\ntraining dae2")
+d = []
+for epoch in range(training_epochs):
+    # go through trainng set
+    c = []
+    for start, end in zip(range(0, len(trX), batch_size), range(batch_size, len(trX), batch_size)):
+        c.append(train_da2(trX[start:end]))
+    d.append(np.mean(c, dtype='float64'))
+    print(d[epoch])
+
+
+pylab.plot(range(training_epochs), d, color = "red", label = "Training layer 2")
+
+
+print("\training dae3")
+d = []
+for epoch in range(training_epochs):
+    # go through trainng set
+    c = []
+    for start, end in zip(range(0, len(trX), batch_size), range(batch_size, len(trX), batch_size)):
+        c.append(train_da3(trX[start:end]))
+    d.append(np.mean(c, dtype='float64'))
+    print(d[epoch])
+
+pylab.plot(range(training_epochs), d, color = "green", label = "Training layer 3")
+pylab.plt.legend(loc = "best")
+
 
 
 

@@ -52,7 +52,7 @@ def model(X, w1, b1, w2, b2, w3, b3, w4, b4):
     o3 = T.flatten(o2, outdim=2)
 
     #make the network fully connected, having a layer of 100 neurons
-    y3 = T.nnet.sigmoid(T.dot(o3, w3) + b3)
+    y3 = T.nnet.relu(T.dot(o3, w3) + b3)
 
     #forward the output of fully connected layer to the 10 classification neurons in py_x,
     #activation function is now the softmax for probabilities in the outputs
