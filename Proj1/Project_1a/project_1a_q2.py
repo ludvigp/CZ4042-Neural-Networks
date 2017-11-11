@@ -43,16 +43,13 @@ decay = 1e-6
 learning_rate = 0.01
 epochs = 1000
 
-#Was 32
-#batch_size = 32
-
 batch_sizes = [4, 8, 16, 32, 64]
 
 #To make distinction between graphs
 colors = {4:"blue", 8:"purple", 16:"green", 32:"black", 64:"orange"}
-# theano expressions
 
 
+#To find the optimal batch size, we put the code inside a for-loop to compare the different sizes in the test set
 for batch_size in batch_sizes:
     X = T.matrix()  # features
     Y = T.matrix()  # output
@@ -131,6 +128,8 @@ for batch_size in batch_sizes:
     plt.plot(range(epochs), train_cost, color = colors[batch_size], label = "Batch size: " + str(batch_size))
     plt.figure("accuracy")
     plt.plot(range(epochs), test_accuracy, color = colors[batch_size], label = "Batch size: " + str(batch_size))
+
+    #part b, plot time taken to update parameter for each batch size
     plt.figure("time")
     plt.plot(range(epochs), time_list, color = colors[batch_size], label = "Batch size: " + str(batch_size))
 
@@ -161,8 +160,6 @@ plt.ylabel('time in seconds')
 plt.title('time')
 plt.savefig('p1a_sample_time.png')
 plt.legend(loc = "best")
-
-
 
 plt.show()
 

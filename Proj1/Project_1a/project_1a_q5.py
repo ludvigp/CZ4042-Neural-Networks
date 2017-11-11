@@ -51,20 +51,31 @@ batch_size = 32
 colors = {0: "red", 1: "blue"}
 
 
+#Dependent on iteration, different functions and variables are initialized.
+#First iteration represent the 3-layer network, the other one represents the 4-layer network
 for iteration in range (2):
-    w1, b1 = init_weights(36, 10), init_bias(10)  # weights and biases from input to hidden layer
     X = T.matrix()  # features
     Y = T.matrix()  # output
 
     #one lever of neurons
     if iteration==0:
-        w2, b2 = init_weights(10, 6, logistic=False), init_bias(6)  # weights and biases from hidden to output layer
+        #In the 3-layer network, we use 5 hidden neurons, batch-size = 16 and decay = 1e-9
+        #Variables have to be changed back due to being changed for the 3-layer iteration
+        decay = 1e-9
+        batch_size = 16
+
+        w1, b1 = init_weights(36, 5), init_bias(5)  # weights and biases from input to hidden layer
+        w2, b2 = init_weights(5, 6, logistic=False), init_bias(6)  # weights and biases from hidden to output layer
         h1 = T.nnet.sigmoid(T.dot(X, w1) + b1)
         py = T.nnet.softmax(T.dot(h1, w2) + b2)
         params = [w1, b1, w2, b2]
 
     #two levels of neurons
     else:
+        #In the 4-layer network, we use 10 neurons in every layer, decay = 1e-6 and batch size = 32
+        decay = 1e-6
+        batch_size = 32
+        w1, b1 = init_weights(36, 10), init_bias(10)  # weights and biases from input to hidden layer
         w3, b3 = init_weights(10, 10), init_bias(10)  # weights and biasas from first hidden layer to second layer
         w2, b2 = init_weights(10, 6, logistic=False), init_bias(6)  # weights and biases from hidden to output layer
 

@@ -198,8 +198,8 @@ best_b_h1 = np.zeros(no_hidden1)
 alpha.set_value(learning_rate)
 
 for iter in range(epochs):
-    #if iter % 100 == 0:
-    print(iter)
+    if iter % 100 == 0:
+        print(iter)
 
     trainX, trainY = shuffle_data(trainX, trainY)
     train_cost[iter] = train(trainX, np.transpose(trainY))

@@ -45,18 +45,17 @@ learning_rate = 0.01
 epochs = 1000
 
 colors = {0:"blue", 1e-3:"purple", 1e-6:"green", 1e-9:"black", 1e-12:"orange"}
-#Was 32
-#batch_size = 32
 
+
+#Parameters stated as optimal in previous parts of the project
 batch_size = 16
 neurons = 5
 
 possible_decay_parameters = [0, 1e-3, 1e-6, 1e-9, 1e-12]
 
+
+#Do exactly the same as in previous task, but now with stated number of neurons and different decay parameters
 for decay in possible_decay_parameters:
-
-
-    # theano expressions
     X = T.matrix() #features
     Y = T.matrix() #output
 
@@ -100,12 +99,8 @@ for decay in possible_decay_parameters:
     testY = np.zeros((test_Y.shape[0], 6))
     testY[np.arange(test_Y.shape[0]), test_Y-1] = 1
 
-
-
-
-
-    print(trainX.shape, trainY.shape)
-    print(testX.shape, testY.shape)
+    #print(trainX.shape, trainY.shape)
+    #print(testX.shape, testY.shape)
 
     # first, experiment with a small sample of data
     ##trainX = trainX[:1000]
@@ -118,12 +113,6 @@ for decay in possible_decay_parameters:
     n = len(trainX)
 
     #Initializing following lists inside the for loops, and make them global
-    test_accuracy = []
-    train_cost = []
-
-
-
-
     test_accuracy =[]
     train_cost = []
     time_list = []
@@ -142,7 +131,7 @@ for decay in possible_decay_parameters:
         cost = 0.0
         for start, end in zip(range(0, n, batch_size), range(batch_size, n, batch_size)):
             cost += train(trainX[start:end], trainY[start:end])
-            #Measure time spent by every computation
+        #Measure time spent by every computation
         time_list.append(time.time()-start_time)
 
         train_cost = np.append(train_cost, cost/(n // batch_size))
@@ -162,7 +151,6 @@ for decay in possible_decay_parameters:
 #Plots
 
 plt.figure("cost")
-#plt.plot(range(epochs), train_cost)
 plt.xlabel('iterations')
 plt.ylabel('cross-entropy')
 plt.title('training cost')
@@ -170,7 +158,6 @@ plt.savefig('p1a_sample_cost_decay.png')
 plt.legend(loc = "best")
 
 plt.figure("accuracy")
-#plt.plot(range(epochs), test_accuracy)
 plt.xlabel('iterations')
 plt.ylabel('accuracy')
 plt.title('test accuracy')

@@ -41,8 +41,10 @@ def shuffle_data (samples, labels):
 colors = {5:"blue", 10:"purple", 25:"green", 50:"black", 100:"orange"}
 decay = 1e-6
 learning_rate = 0.01
-epochs = 1000
+epochs = 500
 
+
+#As stated in the report, 16 was the optimal batch size. We use these in further simulations
 batch_size = 16
 
 hidden_layer_options = [5, 10, 25, 50, 100]
@@ -93,12 +95,8 @@ for neurons in hidden_layer_options:
     testY = np.zeros((test_Y.shape[0], 6))
     testY[np.arange(test_Y.shape[0]), test_Y-1] = 1
 
-
-
-
-
-    print(trainX.shape, trainY.shape)
-    print(testX.shape, testY.shape)
+    #print(trainX.shape, trainY.shape)
+    #print(testX.shape, testY.shape)
 
     # first, experiment with a small sample of data
     ##trainX = trainX[:1000]
@@ -113,24 +111,20 @@ for neurons in hidden_layer_options:
     #Initializing following lists inside the for loops, and make them global
     test_accuracy = []
     train_cost = []
-
-
-
-
-    test_accuracy =[]
-    train_cost = []
     time_list = []
 
     start_time = time.time()
 
     for i in range(epochs):
+
         if i+1 % 200 == 0:
             print("Batch size: " + str(batch_size) + ", iteration: " + str(i) +" of " + str(epochs))
+        start_time = time.time()
         trainX, trainY = shuffle_data(trainX, trainY)
         cost = 0.0
         for start, end in zip(range(0, n, batch_size), range(batch_size, n, batch_size)):
             cost += train(trainX[start:end], trainY[start:end])
-            #Measure time spent by every computation
+        #Measure time spent by every computation
         time_list.append(time.time()-start_time)
 
         train_cost = np.append(train_cost, cost/(n // batch_size))
@@ -140,6 +134,8 @@ for neurons in hidden_layer_options:
     plt.plot(range(epochs), train_cost, color=colors[neurons], label="Neurons: " + str(neurons))
     plt.figure("accuracy")
     plt.plot(range(epochs), test_accuracy, color=colors[neurons], label="Neurons: " + str(neurons))
+
+    #Part b of the question, plot time
     plt.figure("time")
     plt.plot(range(epochs), time_list, color=colors[neurons], label="Neurons: " + str(neurons))
 
@@ -150,7 +146,6 @@ for neurons in hidden_layer_options:
 #Plots
 
 plt.figure("cost")
-#plt.plot(range(epochs), train_cost)
 plt.xlabel('iterations')
 plt.ylabel('cross-entropy')
 plt.title('training cost')
@@ -158,7 +153,6 @@ plt.savefig('p1a_sample_cost_neurons.png')
 plt.legend(loc = "best")
 
 plt.figure("accuracy")
-#plt.plot(range(epochs), test_accuracy)
 plt.xlabel('iterations')
 plt.ylabel('accuracy')
 plt.title('test accuracy')
